@@ -3,30 +3,31 @@ from utils.api import StellarBurgersApi
 from utils.helpers import generate_random_email
 
 
-@allure.feature('User Orders')
+@allure.feature('Заказы пользователя')
 class TestUserOrders:
 
-    @allure.story('Get orders for authorized user')
+    @allure.title('Получение списка заказов авторизированного пользователя')
     def test_get_orders_authorized(self):
         api = StellarBurgersApi()
         email = generate_random_email()
         password = "password123"
 
-        # Create user and login
+        # Cоздание пользователя и авторизация
         api.create_user(email, password, "Test User")
         login_response = api.login_user(email, password)
         token = login_response.json()['accessToken']
 
-        # Get orders
+        # Получение списка заказов
         response = api.get_user_orders(token)
 
-        assert response.status_code == 200
-        assert response.json()['success'] == True
-        assert 'orders' in response.json()
-        assert 'total' in response.json()
-        assert 'totalToday' in response.json()
+        assert (response.status_code == 200 and
+                response.json()['success'] == True and
+                'orders' in response.json() and
+                'total' in response.json() and
+                'totalToday' in response.json())
 
-    @allure.story('Get orders for unauthorized user')
+
+    @allure.story('Получение списка заказов неавторизированного пользователя')
     def test_get_orders_unauthorized(self):
         api = StellarBurgersApi()
 

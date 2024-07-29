@@ -4,37 +4,36 @@ from utils.api import StellarBurgersApi
 from utils.helpers import generate_random_email
 
 
-@allure.feature('User Creation')
+@allure.feature('Создание пользователя')
 class TestUserCreation:
 
-    @allure.story('Create unique user')
+    @allure.title('Создание уникального пользователя')
     def test_create_unique_user(self):
         api = StellarBurgersApi()
         email = generate_random_email()
         response = api.create_user(email, "password123", "Test User")
 
-        assert response.status_code == 200
-        assert response.json()['success'] == True
-        assert 'user' in response.json()
-        assert 'accessToken' in response.json()
-        assert 'refreshToken' in response.json()
+        assert (response.status_code == 200 and response.json()['success'] == True and
+                'user' in response.json() and
+                'accessToken' in response.json() and
+                'refreshToken' in response.json())
 
-    @allure.story('Create existing user')
+    @allure.title('Создание уже существующего пользователя')
     def test_create_existing_user(self):
         api = StellarBurgersApi()
         email = generate_random_email()
 
-        # Create user first time
+        # создание первого
         api.create_user(email, "password123", "Test User")
 
-        # Try to create the same user again
+        # попытка повторного создания
         response = api.create_user(email, "password123", "Test User")
 
-        assert response.status_code == 403
-        assert response.json()['success'] == False
-        assert "User already exists" in response.json()['message']
+        assert (response.status_code == 403 and
+                response.json()['success'] == False and
+                "User already exists" in response.json()['message'])
 
-    @allure.story('Create user with missing field')
+    @allure.title('Создание пользователя с одним из пропущенных полей')
     @pytest.mark.parametrize("missing_field", ["email", "password", "name"])
     def test_create_user_missing_field(self, missing_field):
         api = StellarBurgersApi()
@@ -43,10 +42,11 @@ class TestUserCreation:
             "password": "password123",
             "name": "Test User"
         }
-        del data[missing_field]
+
+        data[missing_field] = None
 
         response = api.create_user(**data)
 
-        assert response.status_code == 403
-        assert response.json()['success'] == False
-        assert "Email, password and name are required fields" in response.json()['message']
+        assert (response.status_code == 403 and
+                '"success":false' in response.text and
+                response.json()['message'] == 'Email, password and name are required fields')

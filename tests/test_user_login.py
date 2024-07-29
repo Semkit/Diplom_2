@@ -3,34 +3,33 @@ from utils.api import StellarBurgersApi
 from utils.helpers import generate_random_email
 
 
-@allure.feature('User Login')
+@allure.feature('Авторизация пользователя')
 class TestUserLogin:
 
-    @allure.story('Login with valid credentials')
+    @allure.title('Попытка авторизация с верными данными')
     def test_login_valid_credentials(self):
         api = StellarBurgersApi()
         email = generate_random_email()
         password = "password123"
 
-        # Create user first
+        # Создание пользователя
         api.create_user(email, password, "Test User")
 
-        # Try to login
+        # Авторизация
         response = api.login_user(email, password)
 
-        assert response.status_code == 200
-        assert response.json()['success'] == True
-        assert 'accessToken' in response.json()
-        assert 'refreshToken' in response.json()
-        assert 'user' in response.json()
+        assert (response.status_code == 200 and response.json()['success'] == True and
+                'accessToken' in response.json() and
+                'refreshToken' in response.json() and
+                'user' in response.json())
 
-    @allure.story('Login with invalid credentials')
+    @allure.title('Попытка авторизации с неверными данными')
     def test_login_invalid_credentials(self):
         api = StellarBurgersApi()
         email = generate_random_email()
 
         response = api.login_user(email, "wrongpassword")
 
-        assert response.status_code == 401
-        assert response.json()['success'] == False
-        assert "email or password are incorrect" in response.json()['message']
+        assert (response.status_code == 401 and
+                response.json()['success'] == False and
+                "email or password are incorrect" in response.json()['message'])
